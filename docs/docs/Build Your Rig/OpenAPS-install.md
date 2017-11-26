@@ -25,7 +25,7 @@ The screenshot below shows an example of the questions you'll be prompted to rep
 * email address for github commits
 * directory name for your openaps - we recommend the default `myopenaps` (see note above)
 * serial number of your pump
-* whether or not you are using an Explorer board
+* whether you are using an Explorer board
    * if not an Explorer board, and not a Carelink stick, you'll need to enter the mmeowlink port for TI stick.  See [here](https://github.com/oskarpearson/mmeowlink/wiki/Installing-MMeowlink) for directions on finding your port
     * if you're using a Carelink, you will NOT be using mmeowlink
 * CGM method:  The options are `g4-upload`, `g4-local-only`, `g5`, `mdt`, and `xdrip`.  Note:  OpenAPS also attempts to get BG data from your Nightscout.  OpenAPS will always use the most recent BG data regardless of the source.  G4-upload will allow you to have raw data when the G4 receiver is plugged directly into the rig.
@@ -75,7 +75,7 @@ Well, hey that's actually a good message.  It's saying "I don't hear any interru
 
 As the pump loop continues:
 ```
-Refreshed jq: settings/pumphistory-25h-zoned.json: No such file or directory
+Refreshed jq: settings/pumphistory-24h-zoned.json: No such file or directory
 ```
 That message will clear out once the pump history has successfully been read.
 
@@ -83,7 +83,7 @@ Or how about the fact that autotune hasn't run yet, but you enabled it during se
 ```
 Old settings refresh Could not parse autotune_data
 ```
-Autotune only runs at 12:05am every evening.  So, unless you're building your rig at midnight, you'll probably have to wait overnight for that error message to clear out.  Not a big deal.  You can still loop while that message is showing.  Additionally, you'll have to wait until Autotune runs before SMBs can be enacted (SMBs won't enact unless an Autotune directory exists).
+Autotune only runs at 4:05am every morning. So if autotune has not yet run, you must wait for that error message to clear out, or run it manually. You can still loop while that message is showing. Additionally, you'll have to wait until autotune runs before SMBs can be enacted. (SMBs won't enact unless an Autotune directory exists.)
 
 And then you may have an issue about the time on your pump not matching your rig's time:
 ```
@@ -147,26 +147,37 @@ Note: The pump-loop log is not the only log your rig generates.  There are also 
 
 * Network log: `tail -F /var/log/openaps/network.log`
 
-* Autotune log: `tail -F /var/log/openaps/autotune.log` (remember Autotune only runs at midnight, so there's not much action in that log)
+* Autotune log: `tail -F /var/log/openaps/autotune.log` (remember Autotune only runs at midnight (or at 4AM starting from 0.6.0-rc1), so there's not much action in that log)
 
-These logs and other files are things you may frequently access. There are shortcuts built in to help you more easily access key files on the go. The `l` you type for logs is an example of one of these shortcuts - it's actually a shortcut for the full command `tail -F /var/log/openaps/pump-loop.log`. Here are some other shortcuts:
+These logs and other files are things you may frequently access. There are shortcuts built in to help you more easily access key files on the go. The `l` you type for logs is an example of one of these shortcuts - it's actually a shortcut for the full command `tail -F /var/log/openaps/pump-loop.log`. Here are other shortcuts:
 
 ```
+ --View live logs--
  l => tail -F /var/log/openaps/pump-loop.log
- autosens-loop => tail -n 100 -F /var/log/openaps/autosens-loop.log
- autotune => tail -n 100 -F /var/log/openaps/autotune.log
- ns-loop => tail -n 100 -F /var/log/openaps/ns-loop.log
- pump-loop => tail -n 100 -F /var/log/openaps/pump-loop.log
+ autosens-looplog => tail -n 100 -F /var/log/openaps/autosens-loop.log
+ autotunelog => tail -n 100 -F /var/log/openaps/autotune.log
+ ns-looplog => tail -n 100 -F /var/log/openaps/ns-loop.log
+ pump-looplog => tail -n 100 -F /var/log/openaps/pump-loop.log
+ networklog => tail -n 100 -F /var/log/openaps/network.log
+ xdrip-looplog => tail -n 100 -F /var/log/openaps/xdrip-loop.log
+ cgm-looplog => tail -n 100 -F /var/log/openaps/cgm-loop.log
+ urchin-looplog => tail -n 100 -F /var/log/openaps/urchin-loop.log
+ * to quit watching, press Ctrl+C
+ 
+ --View settings/logs/info--
  cat-pref => cd ~/myopenaps && cat preferences.json
- edit-wifi => vi /etc/wpa_supplicant/wpa_supplicant.conf
  cat-wifi => cat /etc/wpa_supplicant/wpa_supplicant.conf
- edit-pref => cd ~/myopenaps && vi preferences.json
- log-wifi => tail -n 100 -F /var/log/openaps/network.log
- git-branch => cd ~/src/oref0 && git branch
  cat-autotune => cd ~/myopenaps/autotune && cat autotune_recommendations.log
- edit-runagain => cd ~/myopenaps && nano oref0-runagain.sh
  cat-runagain => cd ~/myopenaps && cat oref0-runagain.sh
-```
+ git-branch => cd ~/src/oref0 && git branch
+ edison-battery => cd ~/myopenaps/monitor && cat edison-battery.json
+ cat-reservoir => cd ~/myopenaps/monitor && cat reservoir.json
+ 
+ --Edit settings--
+ edit-wifi => vi /etc/wpa_supplicant/wpa_supplicant.conf
+ edit-pref => cd ~/myopenaps && vi preferences.json
+ edit-runagain => cd ~/myopenaps && nano oref0-runagain.sh
+ ```
 To use these shortcuts, just type in the phrase you see on the left - i.e. `edit-wifi` and hit enter.
 
 ## Finish your OpenAPS setup
