@@ -4,11 +4,78 @@ All of the settings specific to OpenAPS (that can't be read from the pump) will 
 
 (*Note that there are some preferences that show up by default; these are the most commonly adjusted. There are additional preferences available to set that are not used by everyone, and are described below - any of these can also be added to the preferences.json*)
 
+
+<details>
+        <summary><b>Click here to expand a clickable list to jump to each preference:</b></summary>
+        
+- [Editing your preferences.json](#editing-your-preferencesjson)
+- [Commonly-adjusted preferences:](#commonly-adjusted-preferences)
+   * [max IOB:](#max-iob)
+   * [max daily safety multiplier:](#max-daily-safety-multiplier)
+   * [current basal safety multiplier:](#current-basal-safety-multiplier)
+  * [Important Note About Safety Multipliers:](#important-note-about-safety-multipliers)
+    + [A few examples:](#a-few-examples)
+  * [autosens_max:](#autosens-max)
+  * [autosens_min:](#autosens-min)
+  * [rewind_resets_autosens:](#rewind-resets-autosens)
+  * [unsuspend_if_no_temp:](#unsuspend-if-no-temp)
+  * [carbsReqThreshold](#carbsreqthreshold)
+  * [curve: "rapid-acting"](#curve-rapid-acting)
+  * [useCustomPeakTime](#usecustompeaktime)
+  * [insulinPeakTime](#insulinpeaktime)
+- [oref1-related preferences:](#oref1-related-preferences)
+  * [enableSMB_after_carbs](#enablesmb-after-carbs)
+  * [enableSMB_with_COB](#enablesmb-with-cob)
+  * [enableSMB_with_temptarget](#enablesmb-with-temptarget)
+  * [enableUAM](#enableuam)
+  * [enableSMB_always](#enablesmb-always)
+  * [enableSMB_after_carbs](#enablesmb-after-carbs)
+  * [allowSMB_with_high_temptarget](#allowsmb-with-high-temptarget)
+  * [maxSMBBasalMinutes](#maxsmbbasalminutes)
+- [Exercise-mode related preferences:](#exercise-mode-related-preferences)
+  * [exercise_mode](#exercise-mode)
+  * [high_temptarget_raises_sensitivity](#high-temptarget-raises-sensitivity)
+  * [low_temptarget_lowers_sensitivity](#low-temptarget-lowers-sensitivity)
+  * [sensitivity_raises_target](#sensitivity-raises-target)
+  * [resistance_lowers_target:](#resistance-lowers-target)
+  * [half_basal_exercise_target](#half-basal-exercise-target)
+- [Pushover related preferences](#pushover-related-preferences)
+  * [pushover_snooze:](#pushover-snooze)
+  * [pushover_only:](#pushover-only)
+  * [pushover_sound:](#pushover-sound)
+  * [pushover_priority:](#pushover-priority)
+  * [pushover_retry:](#pushover-retry)
+  * [pushover_expire:](#pushover-expire)
+- [Other preferences:](#other-preferences)
+  * [autosens_adjust_targets:](#autosens-adjust-targets)
+  * [adv_target_adjustments:](#adv-target-adjustments)
+  * [skip_neutral_temps:](#skip-neutral-temps)
+  * [bolussnooze_dia_divisor:](#bolussnooze-dia-divisor)
+  * [min_5m_carbimpact:](#min-5m-carbimpact)
+  * [carbratio_adjustmentratio:](#carbratio-adjustmentratio)
+  * [maxCOB:](#maxcob)
+  * [remainingCarbsCap:](#remainingcarbscap)
+  * [remainingCarbsFraction:](#remainingcarbsfraction)
+  * [autotune_isf_adjustmentFraction:](#autotune-isf-adjustmentfraction)
+  * [offline_hotspot](#offline-hotspot)
+  * [wide_bg_target_range](#wide-bg-target-range)
+  * [A52_risk_enable (A52 risk mitigation)](#a52-risk-enable-a52-risk-mitigation)
+
+</details>
+
+
 ## Editing your preferences.json
 
 Your preferences are found in the directory `myopenaps/preferences.json`.  To edit any of your preferences, you can enter `edit-pref` (as a shortcut) or `cd ~/myopenaps && nano preferences.json`
 
 To check your edits when you're done, use `cd ~/myopenaps && cat preferences.json` When editing preferences, it's advised to do so in terminal (not a word processor) in order to ensure ascii characters are used within your preferences file. 
+
+IMPORTANT: Any variables that are not **true**, **false**, or a **number** MUST be inclosed in straight (not curly) quotes. 
+        
+        1. "max_iob": 0,              <-- Zero is a number, so no quotes necessary.
+        2. "enableUAM": false,        <-- True/False do not require quotes
+        3. "curve": "rapid-acting"    <-- "Rapid-acting" is not true/false or a number, so it must be inclosed in quotes.
+
 
 ## Commonly-adjusted preferences:
 
@@ -22,7 +89,7 @@ To check your edits when you're done, use `cd ~/myopenaps && cat preferences.jso
         "rewind_resets_autosens": true,
         "adv_target_adjustments": true,
         "unsuspend_if_no_temp": false,
-        "enableSMB_with_bolus": false,
+        "enableSMB_after_carbs": false,
         "enableSMB_with_COB": false,
         "enableSMB_with_temptarget": false,
         "enableUAM": false,
@@ -32,9 +99,9 @@ To check your edits when you're done, use `cd ~/myopenaps && cat preferences.jso
 
 #### max_iob: 
 
-`max_iob` is an important safety setting for your OpenAPS set up. `max_iob` is the maximum amount of basal (or SMB correction) insulin that your loop is allowed to accumulate to treat higher-than-target BG.  Unlike the other two OpenAPS safety settings (`max_daily_safety_multiplier` and `current_basal_safety_multiplier`), `max_iob` is set as a fixed number of units of insulin. 
+`max_iob` is an important safety setting for your OpenAPS set up. Beginning with oref0 0.6.0 and beyond, `max_iob` is the maximum amount of insulin on board from all sources -- both basal (or SMB correction) and bolus insulin -- that your loop is allowed to accumulate to treat higher-than-target BG.  Unlike the other two OpenAPS safety settings (`max_daily_safety_multiplier` and `current_basal_safety_multiplier`), `max_iob` is set as a fixed number of units of insulin. Note that, in previous releases, `max_iob` reflected basal insulin on board only.
 
-Although `max_iob` is set as a fixed number of units of insulin, you should consider your current basal rate settings when setting this safety parameter. A good rule of thumb is for `max_iob` to be no more than 3 times your highest basal rate. You can start conservatively and change this setting over time as you evaluate how the OpenAPS system works for you. 
+In determining your `max_iob` setting, you should consider both your typical meal bolus size and your current basal rate settings when setting this safety parameter. A good rule of thumb to start out with is for `max_iob` to be no more than 3 times your highest basal rate PLUS your typical meal bolus. You can start conservatively and change this setting over time as you evaluate how the OpenAPS system works for you. For people using the advanced features such as SMB (especially those using Fiasp and intending for SMB to replace meal boluses), you will likely need to increase your `max_iob`.
 
 When you run the OpenAPS setup script, it will prompt you to set your `max_iob`.  In previous oref0 releases (0.4.3 or older), the set up script automatically set `max_iob` to 0 units.  This effectively made your initial OpenAPS installation only capable of setting temp basal rates in response to BG levels that were below your target BG levels. (And if your BG level is sufficiently below your target BG level, OpenAPS will set a 30 min. temporary basal rate of 0u/hr., which is often referred to as a "low glucose suspend".)  Again, you can start conservatively and change this setting over time as you evaluate how the OpenAPS system works for you.
 
@@ -42,12 +109,11 @@ The setting you choose during the setup script will be saved in the oref0-runaga
 
 #### max_daily_safety_multiplier: 
 
-This is an important OpenAPS safety limit. The default setting (which is unlikely to need adjusting) is 3. This means that OpenAPS will never be allowed to set a temporary basal rate that is more than 3x the highest hourly basal rate programmed in a user's pump. 
+This is an important OpenAPS safety limit. The default setting (which is unlikely to need adjusting) is 3. This means that OpenAPS will never be allowed to set a temporary basal rate that is more than 3x the highest hourly basal rate programmed in a user's pump, or, if enabled, determined by autotune. 
 
 #### current_basal_safety_multiplier: 
 
-This is another important OpenAPS safety limit. The default setting (which is also unlikely to need adjusting) is 4. This means that OpenAPS will never be allowed to set a temporary basal rate that is more than 4x the current hourly basal rate programmed in a user's pump. 
-
+This is another important OpenAPS safety limit. The default setting (which is also unlikely to need adjusting) is 4. This means that OpenAPS will never be allowed to set a temporary basal rate that is more than 4x the current hourly basal rate programmed in a user's pump, or, if enabled, determined by autotune. 
 
 ### Important Note About Safety Multipliers:
 
@@ -55,8 +121,7 @@ This is another important OpenAPS safety limit. The default setting (which is al
 
 OpenAPS will use whichever of those three values is the lowest, at any given time, as the ceiling for the temp basal rate it will set.** 
 
----
- #### A few examples:
+#### A few examples:
 
 ![Example safety cap image - see raw file in the same folder of docs if needs editing](examples_safety_caps_in_play.png)
 
@@ -78,8 +143,6 @@ If  the temporary basal rate setting recommended by OpenAPS (as determined in [`
 You can also view this message in the Nightscout OpenAPS pill (which pops up a detailed message about recent OpenAPS activity if you hover your mouse over the OpenAPS pill):
 
 ![max safe basal message](../Images/max-safe-basal.jpg) 
----
-
 
 #### autosens_max:
 
@@ -103,7 +166,7 @@ grams of carbsReq to trigger a pushover. Defaults to 1 (for 1 gram of carbohydra
 
 #### curve: "rapid-acting" 
 
-Rapid-acting is the default in 0.6.0 and beyond. You can change this to "ultra-rapid" for Fiasp, or "bilinear" for using the old curve. Most people prefer the rapid-acting curve.
+Rapid-acting is the default in 0.6.0 and beyond. You can change this to "ultra-rapid" for Fiasp ([see here for other tips on switching to Fiasp](http://openaps.readthedocs.io/en/latest/docs/Customize-Iterate/usability-considerations.html#how-do-i-switch-between-insulin-types-or-switch-to-fiasp-what-should-i-change)), or "bilinear" for using the old curve. Most people prefer the rapid-acting curve over bilinear for Humalog/Novolog. [Read more here to understand the differences in the activity curves](http://openaps.readthedocs.io/en/latest/docs/While%20You%20Wait%20For%20Gear/understanding-insulin-on-board-calculations.html#understanding-the-new-iob-curves-based-on-exponential-activity-curves).
 
 #### useCustomPeakTime
 
@@ -114,13 +177,13 @@ Defaults to false. Setting to true allows changing insulinPeakTime
 Defaults to 75 for rapid acting (Humalog, Novolog). This is the number of minutes after a bolus activity peaks. 
 Defaults to 55m for Fiasp if `useCustomPeakTime: false`
 
-### oref1-related preferences:
+## oref1-related preferences:
 
 These preference should **not** be enabled until you've been looping (and running autotune) for several weeks and are confident that all of your basals and ratios are correct.  Please read the [oref1 section of the docs](http://openaps.readthedocs.io/en/latest/docs/Customize-Iterate/oref1.html) before doing so.
 
-#### enableSMB_with_bolus
+#### enableSMB_after_carbs
 
-This enables supermicrobolus for DIA hours after a manual bolus.
+This enables supermicrobolus for 6 hours after carb entry.
 
 #### enableSMB_with_COB
 
@@ -150,7 +213,7 @@ Defaults to false. When true, allows supermicrobolus (if otherwise enabled) even
 
 Defaults to start at 30. This is the maximum minutes of basal that can be delivered as a single SMB with uncovered COB. This gives the ability to make SMB more aggressive if you choose. It is recommended that the value is set to start at 30, in line with the default, and if you choose to increase this value, do so in no more than 15 minute increments, keeping a close eye on the effects of the changes. It is not recommended to set this value higher than 90 mins, as this may affect the ability for the algorithm to safely zero temp. It is also recommended that pushover is used when setting the value to be greater than default, so that alerts are generated for any predicted lows or highs.
 
-### Exercise-mode related preferences:
+## Exercise-mode related preferences:
 
 #### exercise_mode
 
@@ -180,6 +243,32 @@ Defaults to false. When true, will lower BG target when autosens detects resista
 
 Set to a number, e.g. 160, which means when temp target is 160 mg/dL *and* exercise_mode=true, run 50% basal at this level (120 = 75%; 140 = 60%). This can be adjusted, to give you more control over your exercise modes. 
 
+### Pushover related preferences
+
+#### pushover_snooze:
+
+Defaults to `15`. This sets the minimum time between SMB Pushover alerts.
+
+#### pushover_only:
+
+Defaults to `"carb"`. This sets the type of SMB alerts desired. Options are `"both"`, `"insulin"`, or `"carb"`. Setting pushover_only to `insulin` prevents SMB from sending carb required alerts when SMB thinks additional carbs are required to bring eventual BG up. Setting pushover_only to `carb` prevents SMB from sending insulin required alerts when SMB is hitting maxBolus (see warning in Pushover setup section). Setting pushover_only to `both` allows SMB to send both insulin required and carb required alerts.
+
+#### pushover_sound:
+
+Defaults to `"none"`. This sets the alert sound played on the user device. Valid options are available at https://pushover.net/api.
+
+#### pushover_priority:
+
+Defaults to `0`. This sets the Pushover priority. Valid options are -2, -1, 0, 1, and 2. `-2` generates no notification/alert. `-1`  always sends a quiet notification. `0` triggers sound, vibration, and an alert according to the user's device settings. `1` displays a  high-priority alert and bypasses the user's quiet hours. `2` requires confirmation from the user.
+
+#### pushover_retry:
+
+Defaults to `60`. When a priority 2 alert is sent, the alert will sound every pushover_retry seconds until the user acknowledges the alert.
+
+#### pushover_expire:
+
+Defaults to `600`. When a priority 2 alert is sent, the alert will sound every pushover_retry seconds until the user acknowledges the alert or pushover_expire seconds passes. After pushover_expire seconds, the alert will be cancelled.
+
 ### Other preferences:
 
 Generally, you won't need to adjust any of the preferences below.  But if you do wish to change the default behavior, you can add these into your preferences.json to do so (or use oref0-get-profile --updatePreferences to get the full list of all preferences added to your preferences.json).
@@ -192,13 +281,11 @@ This is used to allow autosens to adjust BG targets, in addition to ISF and basa
 
 This feature was previously enabled by default but will now default to false (will NOT be enabled automatically) in oref0 0.6.0 and beyond. (There is no need for this with 0.6.0). This feature lowers oref0's target BG automatically when current BG and eventualBG are high.  This helps prevent and mitigate high BG, but automatically switches to low-temping to ensure that BG comes down smoothly toward your actual target.  If you find this behavior too aggressive, you can disable this feature.  If you do so, please let us know so we can better understand what settings work best for everyone. 
 
-#### override_high_target_with_low: 
-
-Defaults to false, but can be turned on if you have a situation where you want someone (a school caregiver, for example) to use the bolus wizard for meal boluses. If set to “True”, then the bolus wizard will calculate boluses with the high end of the BG target, but OpenAPS will target the low end of that range. So if you  have a target range of 100-120; and set this to true; bolus wizard will adjust to 120 and the loop will target 100. If you have this on, you probably also want a wide range target, rather than a narrow (i.e. 100-100) target.
-
 #### skip_neutral_temps: 
 
-Defaults to false, so that OpenAPS will set temps whenever it can, so it will be easier to see if the system is working, even when you are offline. This means OpenAPS will set a “neutral” temp (same as your default basal) if no adjustments are needed. If you are a light sleeper and the “on the hour” buzzing or beeping wakes you up (even in vibrate mode), you may want to turn this to “true” to skip this setting. However, we recommend it for most people who will be using this system on the go and out of constant connectivity.
+Defaults to false, so that OpenAPS will set temps whenever it can, so it will be easier to see if the system is working, even when you are offline. This means OpenAPS will set a “neutral” temp (same as your default basal) if no adjustments are needed. If you are a light sleeper and the “on the hour” buzzing or beeping wakes you up (even in vibrate mode), you may want to turn this to “true” to skip setting neutral temps. However, we recommend leaving neutral temps enabled for most people who will be using this system on the go and out of constant connectivity.
+
+**Note**: if set to `true`, in order to reduce notifications at the top of the hour, it will also attempt to cancel temp basals (unless BG or minGuardBG is below threshold and a zero-temp is needed) prior to the top of the hour. Normally a new temp basal will be set (if still needed) after the top of the hour, but that may be delayed if the rig has issues connecting to the pump.  People who want to minimize the 'on the hour' temp basal notification beeps/vibrations may choose to accept that risk and choose to set skip_neutral_temps to true.
 
 #### bolussnooze_dia_divisor: 
 
@@ -237,6 +324,8 @@ Default hotspot network name is the rig name; default password is "#OpenAPS" (no
 #### wide_bg_target_range
 
 Defaults to false, which means by default only the low end of the pump's BG target range is used as OpenAPS target. This is a safety feature to prevent too-wide targets and less-optimal outcomes. Therefore the higher end of the target range is used only for avoiding bolus wizard overcorrections. Use `wide_bg_target_range: true` to force neutral temps over a wider range of eventualBGs. 
+
+**SAFETY WARNING:** If the pump has a target range high end set lower than the BG input into the Bolus Wizard, the Bolus Wizard will add insulin to cover the carbs as well as bring BG down to the high end. I.e. if your high end is 110 and you enter a 160 BG and 45g of carbs in the Bolus Wizard, the Bolus Wizard will dose 1U to bring BG to 110 and 3U for carbs (assuming 50 (mg/dL)/U and 15g/U factors). The rig will likely have already dosed insulin to bring your BG to your low target, and you are potentially "double dosing". In these scenarios, you will have too much insulin onboard and can experience a severe low. If you use the Boluz Wizard, ensure the high end of the BG target range is a high number such as 250 mg/dL.
 
 #### A52_risk_enable (A52 risk mitigation)
 
